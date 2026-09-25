@@ -1,0 +1,20 @@
+{
+  "name": "JSON Template Filler",
+  "id": "1685286769679044469",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma",
+    "buzz"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "*"
+    ],
+    "reasoning": "Image fields in the JSON are URLs chosen by the user, so images can come from any domain. The interface also loads the Inter font from Google Fonts."
+  }
+}

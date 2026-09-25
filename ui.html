@@ -1,0 +1,201 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #fa5a32;
+    --accent-hover: #e94a22;
+    --accent-soft: rgba(250, 90, 50, .1);
+    --paper: #f6f4e8;
+    --paper-2: #efece0;
+    --ink: #2b2620;
+    --muted: #9a958a;
+    --line: #e3dfd2;
+    --ok: #2f8f5b;
+    --warn: #b86200;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; padding: 8px; background: var(--accent); font: 12px/1.5 Inter, system-ui, -apple-system, sans-serif; color: var(--ink); }
+  .card { height: 100%; display: flex; flex-direction: column; background: var(--paper); border-radius: 16px; overflow: hidden; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .brand { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: -.01em; }
+
+  main { flex: 1; min-height: 0; overflow: auto; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+  .hero h1 { margin: 0; color: var(--accent); font-weight: 900; font-size: clamp(38px, 13vw, 56px); line-height: .88; letter-spacing: -.055em; text-transform: uppercase; }
+  .hero p { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; max-width: 360px; }
+
+  .editor { flex: 1 0 220px; display: flex; flex-direction: column; min-height: 220px; border: 1px dashed #d8d3c4; border-radius: 14px; background: transparent; transition: border-color .15s, background .15s; }
+  .editor:focus-within, .editor.drag { border-color: var(--accent); background: rgba(255, 255, 255, .35); }
+  .editor-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px 0; white-space: nowrap; font-size: 11px; color: var(--muted); }
+  .editor-bar b { color: var(--accent); font-weight: 700; margin-right: 4px; }
+  textarea { display: block; flex: 1; width: 100%; min-height: 0; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink);
+    padding: 8px 12px 12px; font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; }
+  textarea::placeholder { color: var(--muted); }
+
+  .badge { flex: none; white-space: nowrap; padding: 2px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 600; background: var(--paper-2); color: var(--muted); }
+  .badge.ok { background: var(--accent-soft); color: var(--accent); }
+  .badge.err { background: #fde3dc; color: #c2361a; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 3px 10px; border-radius: 99px; border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 500; }
+  .chip small { color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+  .result { display: flex; flex-direction: column; gap: 10px; }
+  .msg { font-size: 11.5px; color: var(--muted); }
+  .msg b { color: var(--accent); font-weight: 700; margin-right: 4px; }
+  .msg.ok b { color: var(--ok); }
+  .msg.warn b { color: var(--warn); }
+  .msg.err b, .msg.err { color: #c2361a; }
+  .msg ul { margin: 3px 0 0; padding-left: 16px; }
+
+  .actions { display: flex; gap: 8px; padding: 10px 16px; }
+  button { height: 34px; border-radius: 99px; font: 600 12px/1 Inter, system-ui, sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s, color .15s, opacity .15s, transform .05s; }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:disabled { opacity: .4; cursor: default; }
+  .pill { height: 28px; padding: 0 14px; border: 0; background: var(--accent); color: #fff; font-size: 11.5px; }
+  .pill:hover:not(:disabled) { background: var(--accent-hover); }
+  .primary { flex: 1; border: 0; background: var(--accent); color: #fff; }
+  .primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .spinner { width: 11px; height: 11px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  .busy .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 6px 12px; margin: 0 16px; padding: 10px 0 12px; border-top: 1px solid var(--line); font-size: 10px; line-height: 1.45; color: var(--muted); }
+  footer b { color: var(--accent); font-weight: 700; }
+  @media (max-width: 380px) {
+    nav, main, .actions { padding-left: 12px; padding-right: 12px; }
+    footer { margin: 0 12px; grid-template-columns: 1fr; }
+    .hero p { font-size: 11px; }
+  }
+</style>
+
+<div class="card">
+  <nav>
+    <span class="brand">Template Filler</span>
+    <button class="pill" id="scan"><span class="spinner"></span>Scan templates</button>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <h1>JSON<br>Filler</h1>
+      <p>One instance per item, filled by layer name. Paste your JSON, or scan the file to get an example.</p>
+    </div>
+
+    <div class="editor" id="editor">
+      <div class="editor-bar">
+        <span><b>JSON</b>paste or drop a file</span>
+        <span class="badge" id="status">Empty</span>
+      </div>
+      <textarea id="json" spellcheck="false" placeholder='{
+  "name": "My carousel",
+  "slides": [
+    { "template": "Cover", "fields": { "Title": "Hello **world**" } }
+  ]
+}'></textarea>
+    </div>
+
+    <div class="chips" id="chips" hidden></div>
+    <div class="result" id="result"></div>
+  </main>
+
+  <div class="actions">
+    <button class="primary" id="go"><span class="spinner"></span><span id="goLabel">Generate</span></button>
+  </div>
+
+  <footer>
+    <div><b>Fields</b> Each key fills the layer with the same name.</div>
+    <div><b>Style</b> Use **bold** and *italic* inside text.</div>
+    <div><b>Hide</b> Set a field to null to hide that layer.</div>
+  </footer>
+</div>
+
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+  var ta = $('json'), statusEl = $('status'), result = $('result'), chips = $('chips'), go = $('go'), scanBtn = $('scan'), goLabel = $('goLabel');
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function plural(n) { return n + (n === 1 ? ' item' : ' items'); }
+
+  function validate() {
+    var v = ta.value.trim();
+    goLabel.textContent = 'Generate';
+    if (!v) { statusEl.className = 'badge'; statusEl.textContent = 'Empty'; go.disabled = true; return null; }
+    try {
+      var data = JSON.parse(v);
+      var slides = Array.isArray(data) ? data : data && data.slides;
+      if (!Array.isArray(slides) || !slides.length) throw new Error('slides');
+      statusEl.className = 'badge ok';
+      statusEl.textContent = '✓ ' + plural(slides.length);
+      goLabel.textContent = 'Generate ' + plural(slides.length);
+      go.disabled = false;
+      return data;
+    } catch (e) {
+      statusEl.className = 'badge err';
+      statusEl.textContent = e.message === 'slides' ? 'Missing "slides"' : 'Invalid JSON';
+      go.disabled = true;
+      return null;
+    }
+  }
+
+  function setBusy(btn, on) {
+    btn.classList.toggle('busy', on);
+    scanBtn.disabled = on;
+    go.disabled = on || !validate();
+  }
+
+  function msg(kind, label, text, items) {
+    var html = '<div class="msg ' + kind + '"><b>' + esc(label) + '</b>' + (text ? esc(text) : '');
+    if (items && items.length) html += '<ul><li>' + items.map(esc).join('</li><li>') + '</li></ul>';
+    return html + '</div>';
+  }
+
+  ta.addEventListener('input', validate);
+  ta.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab') { e.preventDefault(); ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end'); }
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !go.disabled) go.click();
+  });
+
+  var editor = $('editor');
+  ['dragenter', 'dragover'].forEach(function (t) { editor.addEventListener(t, function (e) { e.preventDefault(); editor.classList.add('drag'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { editor.addEventListener(t, function () { editor.classList.remove('drag'); }); });
+  editor.addEventListener('drop', function (e) {
+    e.preventDefault();
+    var f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) f.text().then(function (txt) { ta.value = txt; validate(); });
+  });
+
+  scanBtn.onclick = function () {
+    setBusy(scanBtn, true); result.innerHTML = '';
+    parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
+  };
+
+  go.onclick = function () {
+    var data = validate(); if (!data) return;
+    setBusy(go, true); result.innerHTML = '';
+    parent.postMessage({ pluginMessage: { type: 'generate', data: data } }, '*');
+  };
+
+  onmessage = function (e) {
+    var m = e.data.pluginMessage; if (!m) return;
+    if (m.type === 'scan' && m.ok) {
+      ta.value = m.json;
+      chips.hidden = false;
+      chips.innerHTML = m.summary.map(function (s) {
+        var t = s.replace(/^•\s*/, ''), i = t.indexOf(' (');
+        return '<span class="chip">' + esc(i > 0 ? t.slice(0, i) : t) + (i > 0 ? '<small>' + esc(t.slice(i + 2, -1)) + '</small>' : '') + '</span>';
+      }).join('');
+      result.innerHTML = msg('', 'Example ready', 'One item per template: duplicate, reorder and fill them with your content.');
+    } else if (m.ok) {
+      var html = msg('ok', 'Done', m.message);
+      if (m.notes && m.notes.length) html += msg('', 'Reminders', '', m.notes);
+      if (m.warnings && m.warnings.length) html += msg('warn', 'Warnings', '', m.warnings);
+      result.innerHTML = html;
+    } else {
+      result.innerHTML = msg('err', 'Error', m.message);
+    }
+    setBusy(scanBtn, false); setBusy(go, false);
+  };
+
+  validate();
+</script>

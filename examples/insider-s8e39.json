@@ -1,0 +1,60 @@
+{
+  "name": "s8e39",
+  "slides": [
+    {
+      "template": "slide-cover",
+      "fields": {
+        "background-image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/IQM_Quantum_Computer_Espoo_Finland.jpg/1920px-IQM_Quantum_Computer_Espoo_Finland.jpg",
+        "title": "Il computer quantistico romperà Internet?"
+      }
+    },
+    {
+      "template": "slide-title",
+      "fields": {
+        "title": "Il lucchetto di Internet",
+        "body": "Ogni volta che si apre l'**home banking**, si invia un messaggio su WhatsApp o si accede con SPID, entra in gioco la **crittografia**. Alla sua base c'è un'idea semplice: alcuni **problemi matematici** si verificano in un istante, ma per risolverli anche il supercomputer più potente impiegherebbe **miliardi di anni**. Un principio che finora ha protetto Internet, ma che vale solo per i computer che conosciamo."
+      }
+    },
+    {
+      "template": "slide-image",
+      "fields": {
+        "image": "https://sb.nordcdn.com/transform/75d54e94-b710-4e0a-828c-daf51d7f1100/asymmetric-encryption-800x450?format=jpg&quality=90&io=transform%3Afill%2Cwidth%3A1920",
+        "body": "La **crittografia asimmetrica**, nata negli anni Settanta, assegna a ciascuno due chiavi legate tra loro: una **chiave pubblica**, da condividere con chiunque, e una **chiave privata**, che non lascia mai il proprietario. Entrambe derivano dal prodotto di due **numeri primi** giganteschi. Risalire alla chiave privata significa scomporre quel numero, un'operazione chiamata fattorizzazione e risolvibile solo per tentativi."
+      }
+    },
+    {
+      "template": "slide-title",
+      "fields": {
+        "title": "La minaccia quantistica",
+        "body": "Tutto questo vale però solo per i computer tradizionali, che ragionano in bit. I computer quantistici lavorano invece con i **qubit**, che grazie alla **sovrapposizione** possono valere zero e uno contemporaneamente ed esplorare moltissime possibilità in parallelo. Non sono genericamente più veloci, ma eccellono in **compiti specifici**, come alcuni problemi matematici alla base della crittografia."
+      }
+    },
+    {
+      "template": "slide-image-2",
+      "fields": {
+        "body": "Già nel **1994** il matematico **Peter Shor** dimostrò che una macchina di questo tipo, abbastanza potente, potrebbe risolvere la fattorizzazione in ore o giorni. Le stime si accorciano ogni anno e c'è già chi applica la strategia **\"harvest now, decrypt later\"**: intercettare oggi il traffico cifrato per **decifrarlo domani**.",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtzdMbUyJ2y0jNtmcyLzeIUPjew7brMv8N1c1OA8gLhCzKOwWtSeId8WqO&s=10"
+      }
+    },
+    {
+      "template": "slide-title",
+      "fields": {
+        "title": "La crittografia post-quantistica",
+        "body": "La soluzione esiste ed è stata standardizzata nel **2024**. Nonostante il nome, la **crittografia post-quantistica** non usa computer quantistici: si tratta di algoritmi classici, eseguibili su PC e smartphone, basati su problemi che nemmeno un computer quantistico sa risolvere in tempi umani. La famiglia principale sfrutta i **reticoli**, griglie di punti in centinaia di dimensioni. Per ora viene affiancata a quella tradizionale, in un approccio **ibrido**."
+      }
+    },
+    {
+      "template": "slide-text",
+      "fields": {
+        "body": "Un computer quantistico capace di rompere la crittografia ancora non esiste, ma Internet si sta già preparando. **Chrome**, **Signal** e iMessage adottano protezioni post-quantistiche e oltre **la metà** delle richieste web gestite da Cloudflare è già protetta. Restano però **firme digitali**, certificati e dispositivi IoT da aggiornare entro fine decennio. La sicurezza non è statica, ma un **equilibrio** da mantenere: ciò che oggi è impossibile può diventare banale con una nuova idea."
+      }
+    },
+    {
+      "template": "slide-end",
+      "fields": {
+        "cover": "https://www.dentrolatecnologia.it/immagini/s8e39.jpg",
+        "title": "Come si protegge Internet da un computer che ancora non esiste"
+      }
+    }
+  ]
+}
