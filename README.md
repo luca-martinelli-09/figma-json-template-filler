@@ -14,6 +14,7 @@ Scan your templates to get an example JSON, fill it in with your content and gen
 - **Hide layers** – set a field to `null` and the layer disappears; with auto layout the gap closes automatically.
 - **Images from URLs** – image layers are filled from direct image links.
 - **Variants and properties** – pick a variant of a component set and set boolean or text component properties.
+- **Color palettes** – swap color styles per set or per item (e.g. every `Green - …` style becomes `Blue - …`).
 - **Reminders** – add a `note` to an item and it is shown after generation (e.g. which picture still needs to be added).
 - **Figma Buzz aware** – in Buzz each set lands in a new row at the bottom of the canvas grid, named after the set.
 - **Live validation** – the editor tells you whether the JSON is valid and how many items it contains. You can also drop a `.json` file on it.
@@ -46,10 +47,12 @@ Scan your templates to get an example JSON, fill it in with your content and gen
 |---|---|
 | `name` | Optional name of the set: used for the Buzz row, the Design frame and the generated instances. |
 | `slides` | Items to create, in order. A bare array (without `name`) works too. |
+| `sets` | Several sets in one JSON: `{ "sets": [ { "name": …, "slides": […] }, … ] }`. Each set gets its own Buzz row or Design frame. |
 | `template` | Name of a local component or component set. |
 | `variant` | For component sets: the variant properties to pick. Otherwise the default variant is used. |
 | `props` | Component properties (boolean or text) by name. |
 | `fields` | Layer name → value. See below. |
+| `colors` | Color style swaps, on the set (all items) or on a single item (overrides the set). See below. |
 | `note` | Reminder shown in the plugin after generation. |
 | `gap` | Optional spacing between items in the Figma Design frame (default 80). |
 
@@ -60,7 +63,23 @@ Scan your templates to get an example JSON, fill it in with your content and gen
 | `"Some text"` | Replaces the text of a text layer. Supports `**bold**` and `*italic*`; escape a literal asterisk with `\*`. |
 | `"https://…/image.jpg"` | Fills a shape or frame with the image (scaled to fill). |
 | `null` or `false` | Hides the layer. |
+| `["a", "b", null]` | Fills the layers with the same name one by one, in layer order (e.g. the cards of a calendar). `null` hides that one. |
 | `{ "visible": false }` | Hides the layer (explicit form). |
+
+### Colors
+
+`colors` swaps colors, on the whole set or on a single item:
+
+```json
+{
+  "name": "Teatro",
+  "colors": { "#4a9a5e": "#1e88c9", "#e0e8b8": "#d4e9e8" },
+  "slides": [ … ]
+}
+```
+
+- **Hex colors** (`"#4a9a5e": "#1e88c9"`) replace that solid color in fills, strokes and text, in every editor. A layer linked to a color style is detached from it. **Scan templates** adds the colors of each template to the example JSON (the ones linked to a color style, or all of them if none is): change only the right side.
+- **Color style names** (Figma Design only) keep the link to the styles: a family name (`"Green": "Blue"`) swaps every style that starts with it (`Green - 200` → `Blue - 200`, also `Green/200`), an exact name (`"Giallo": "Arancione - 500"`) swaps just that style. In Figma Buzz plugins can't read color styles, so use hex colors there.
 
 Every layer with the given name inside the instance is filled, including layers inside nested instances. Keys starting with `_` are ignored, so you can use them for comments.
 

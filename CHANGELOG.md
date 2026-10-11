@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- `colors`: swap colors for the whole set or a single item, by hex value (`"#4a9a5e": "#1e88c9"`, every editor) or by color style name (`"Green": "Blue"`, Figma Design only).
+- Scan adds the colors of each template to the example JSON, ready to be swapped.
+- An array as a field value fills the layers with the same name one by one.
+- `sets`: generate several sets from one JSON.
+- Error messages show where the error happened.
+
 ## 1.0.0 – 2026-09-25
 
 First public release.

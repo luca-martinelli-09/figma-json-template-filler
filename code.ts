@@ -6,20 +6,25 @@ figma.showUI(__html__, { width: 460, height: 720 });
 
 // ---------- Types ----------
 
-type FieldValue = string | number | null | false | { text?: string; url?: string; visible?: boolean };
+type SingleValue = string | number | null | false | { text?: string; url?: string; visible?: boolean };
+// An array fills the layers with the same name one by one, in layer order
+type FieldValue = SingleValue | SingleValue[];
 
 interface SlideSpec {
   template?: string;
   variant?: Record<string, string>;
   props?: Record<string, string | boolean>;
   fields?: Record<string, FieldValue>;
+  colors?: Record<string, string>;
   name?: string;
   note?: string;
 }
 
 interface SetSpec {
   name?: string;
+  sets?: (SetSpec | SlideSpec[])[];
   gap?: number;
+  colors?: Record<string, string>;
   slides?: SlideSpec[];
 }
 
@@ -149,6 +154,7 @@ async function setImage(node: SceneNode, url: string, warnings: string[], label:
 
 async function localTemplates(): Promise<Template[]> {
   try { await figma.loadAllPagesAsync(); } catch (_e) { /* single-page editors */ }
+  // eslint-disable-next-line @figma/figma-plugins/dynamic-page-find-method-advice -- pages loaded above
   const nodes = figma.root.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] }) as Template[];
   return nodes.filter(n => !(n.type === 'COMPONENT' && n.parent && n.parent.type === 'COMPONENT_SET'));
 }
@@ -184,35 +190,176 @@ function applyProps(inst: InstanceNode, props: Record<string, string | boolean>,
 async function applyField(inst: InstanceNode, key: string, value: FieldValue, warnings: string[], label: string): Promise<void> {
   const targets = inst.findAll(n => n.name === key);
   if (!targets.length) { warnings.push(`${label}: no layer named "${key}".`); return; }
-  for (const node of targets) {
-    if (value === null || value === false) { node.visible = false; continue; }
-    let v: string | number | undefined;
-    if (typeof value === 'object') {
-      if (value.visible === false) { node.visible = false; continue; }
-      v = value.text !== undefined ? value.text : value.url;
-      if (v === undefined) continue;
-    } else {
-      v = value;
+  if (Array.isArray(value) && value.length > targets.length) warnings.push(`${label}: ${value.length} values for "${key}" but only ${targets.length} layers.`);
+  for (let i = 0; i < targets.length; i++) {
+    const node = targets[i];
+    const item = Array.isArray(value) ? value[i] : value;
+    if (item === undefined) continue;
+    await applyValue(node, key, item, warnings, label);
+  }
+}
+
+async function applyValue(node: SceneNode, key: string, value: SingleValue, warnings: string[], label: string): Promise<void> {
+  if (value === null || value === false) { node.visible = false; return; }
+  let v: string | number | undefined;
+  if (typeof value === 'object') {
+    if (value.visible === false) { node.visible = false; return; }
+    v = value.text !== undefined ? value.text : value.url;
+    if (v === undefined) { if (value.visible) node.visible = true; return; }
+  } else {
+    v = value;
+  }
+  node.visible = true;
+  if (node.type === 'TEXT') {
+    await setRichText(node, String(v), warnings);
+  } else if (typeof v === 'string' && /^(https?:|data:image\/)/i.test(v)) {
+    await setImage(node, v, warnings, label);
+  } else {
+    warnings.push(`${label}: "${key}" is not a text layer and the value is not an image URL.`);
+  }
+}
+
+// ---------- Colors ----------
+// "#4a9a5e": "#1e88c9" swaps a solid color everywhere (works in every editor, detaches styles).
+// "Green": "Blue" swaps color styles by name (Figma Design only: Buzz plugins can't read styles).
+
+const HEX_RE = /^#[0-9a-f]{6}$/i;
+
+const toHex = (c: RGB) => '#' + [c.r, c.g, c.b].map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
+const toRgb = (hex: string): RGB => ({ r: parseInt(hex.slice(1, 3), 16) / 255, g: parseInt(hex.slice(3, 5), 16) / 255, b: parseInt(hex.slice(5, 7), 16) / 255 });
+
+function swapPaints(paints: ReadonlyArray<Paint>, map: Record<string, string>, used: Record<string, boolean>): Paint[] | null {
+  let changed = false;
+  const out = paints.map(p => {
+    if (p.type !== 'SOLID') return p;
+    const from = toHex(p.color);
+    if (!map[from] || map[from].toLowerCase() === from) return p;
+    changed = used[from] = true;
+    const { boundVariables: _bv, ...rest } = p;
+    return { ...rest, color: toRgb(map[from]) };
+  });
+  return changed ? out : null;
+}
+
+async function applyHexColors(nodes: SceneNode[], map: Record<string, string>, warnings: string[], label: string): Promise<void> {
+  const used: Record<string, boolean> = {};
+  for (const node of nodes) {
+    if ('fills' in node) {
+      if (node.type === 'TEXT' && node.fills === figma.mixed) {
+        await loadFontsOf(node);
+        for (const seg of node.getStyledTextSegments(['fills'])) {
+          const fills = swapPaints(seg.fills, map, used);
+          if (fills) node.setRangeFills(seg.start, seg.end, fills);
+        }
+      } else if (Array.isArray(node.fills)) {
+        const fills = swapPaints(node.fills, map, used);
+        if (fills) (node as GeometryMixin).fills = fills;
+      }
     }
-    node.visible = true;
-    if (node.type === 'TEXT') {
-      await setRichText(node, String(v), warnings);
-    } else if (typeof v === 'string' && /^(https?:|data:image\/)/i.test(v)) {
-      await setImage(node, v, warnings, label);
-    } else {
-      warnings.push(`${label}: "${key}" is not a text layer and the value is not an image URL.`);
+    if ('strokes' in node) {
+      const strokes = swapPaints(node.strokes, map, used);
+      if (strokes) node.strokes = strokes;
+    }
+  }
+  Object.keys(map).filter(k => !used[k] && map[k].toLowerCase() !== k).forEach(k => warnings.push(`${label}: color ${k} not used in this template.`));
+}
+
+// "Green": "Blue" maps "Green - 500" → "Blue - 500"; an exact name maps a single style.
+function targetStyleName(name: string, map: Record<string, string>): string | null {
+  if (map[name] !== undefined) return map[name];
+  for (const key of Object.keys(map)) {
+    if (name.startsWith(key) && /^[\s/_-]/.test(name.slice(key.length))) return map[key] + name.slice(key.length);
+  }
+  return null;
+}
+
+let paintStylesPromise: Promise<PaintStyle[]> | null = null;
+
+async function applyStyleColors(nodes: SceneNode[], map: Record<string, string>, warnings: string[], label: string): Promise<void> {
+  if (typeof figma.getLocalPaintStylesAsync !== 'function') {
+    warnings.push(`${label}: color styles can't be read by plugins in this editor, use hex colors instead ("#4a9a5e": "#1e88c9").`);
+    return;
+  }
+  if (!paintStylesPromise) paintStylesPromise = figma.getLocalPaintStylesAsync();
+  const styles = await paintStylesPromise;
+  const idByName: Record<string, string> = {};
+  const nameById: Record<string, string> = {};
+  styles.forEach(st => { idByName[st.name] = st.id; nameById[st.id] = st.name; });
+  Object.keys(map).forEach(k => {
+    if (!styles.some(st => targetStyleName(st.name, { [k]: '' }) !== null)) warnings.push(`${label}: no color style matches "${k}".`);
+  });
+  const missing: Record<string, boolean> = {};
+  const swap = (id: string): string | null => {
+    const from = nameById[id];
+    const to = from ? targetStyleName(from, map) : null;
+    if (to === null) return null;
+    if (!idByName[to]) { if (!missing[to]) { missing[to] = true; warnings.push(`${label}: color style "${to}" not found.`); } return null; }
+    return idByName[to];
+  };
+
+  for (const node of nodes) {
+    if ('fillStyleId' in node) {
+      if (node.type === 'TEXT' && node.fillStyleId === figma.mixed) {
+        for (const seg of node.getStyledTextSegments(['fillStyleId'])) {
+          const id = swap(seg.fillStyleId);
+          if (id) await node.setRangeFillStyleIdAsync(seg.start, seg.end, id);
+        }
+      } else if (typeof node.fillStyleId === 'string') {
+        const id = swap(node.fillStyleId);
+        if (id) await node.setFillStyleIdAsync(id);
+      }
+    }
+    if ('strokeStyleId' in node) {
+      const id = swap(node.strokeStyleId);
+      if (id) await node.setStrokeStyleIdAsync(id);
     }
   }
 }
 
+async function applyColors(inst: InstanceNode, map: Record<string, string>, warnings: string[], label: string): Promise<void> {
+  const nodes = [inst as SceneNode].concat(inst.findAll());
+  const hexMap: Record<string, string> = {};
+  const styleMap: Record<string, string> = {};
+  Object.keys(map).forEach(k => {
+    if (k.charAt(0) !== '#') { styleMap[k] = map[k]; return; }
+    if (HEX_RE.test(k) && HEX_RE.test(map[k])) hexMap[k.toLowerCase()] = map[k];
+    else warnings.push(`${label}: "${k}": "${map[k]}" is not a valid color, use the #rrggbb format.`);
+  });
+  if (Object.keys(hexMap).length) await applyHexColors(nodes, hexMap, warnings, label);
+  if (Object.keys(styleMap).length) await applyStyleColors(nodes, styleMap, warnings, label);
+}
+
 // ---------- Generate ----------
 
-async function generate(data: SetSpec | SlideSpec[]): Promise<{ count: number; warnings: string[]; notes: string[] }> {
+type Generated = { count: number; warnings: string[]; notes: string[]; focus: SceneNode[] };
+
+// { "sets": [...] } generates several sets in one go, each in its own row (Buzz) or frame (Design)
+async function generateAll(data: SetSpec | SlideSpec[]): Promise<Generated> {
+  const sets = !Array.isArray(data) && Array.isArray(data.sets) ? data.sets : [data];
+  const total: Generated = { count: 0, warnings: [], notes: [], focus: [] };
+  for (const set of sets) {
+    const prefix = sets.length > 1 ? ((!Array.isArray(set) && set.name) || 'Generated') + ' – ' : '';
+    const r = await generate(set, prefix);
+    total.count += r.count;
+    total.warnings.push(...r.warnings);
+    total.notes.push(...r.notes);
+    total.focus.push(...r.focus);
+  }
+  if (total.focus.length) {
+    figma.currentPage.selection = total.focus;
+    figma.viewport.scrollAndZoomIntoView(total.focus);
+  }
+  return total;
+}
+
+async function generate(data: SetSpec | SlideSpec[], prefix: string): Promise<Generated> {
   const slides = Array.isArray(data) ? data : data && data.slides;
   if (!Array.isArray(slides) || !slides.length) throw new Error('The JSON must contain a non-empty "slides" array.');
   const setName = (!Array.isArray(data) && data.name) || 'Generated';
+  const setColors = (!Array.isArray(data) && data.colors) || {};
 
   const templates = await localTemplates();
+  paintStylesPromise = null;
   const byName: Record<string, Template> = {};
   templates.forEach(t => { if (!byName[t.name]) byName[t.name] = t; });
 
@@ -244,7 +391,7 @@ async function generate(data: SetSpec | SlideSpec[]): Promise<{ count: number; w
   const created: InstanceNode[] = [];
   for (let i = 0; i < slides.length; i++) {
     const s = slides[i] || {};
-    const label = `Slide ${i + 1}`;
+    const label = `${prefix}Slide ${i + 1}`;
     const tpl = s.template ? byName[s.template] : undefined;
     if (!tpl) { warnings.push(`${label}: template "${s.template}" not found, skipped.`); continue; }
     const master = pickVariant(tpl, s.variant, warnings, label);
@@ -258,6 +405,8 @@ async function generate(data: SetSpec | SlideSpec[]): Promise<{ count: number; w
       if (key.charAt(0) === '_') continue;
       await applyField(inst, key, fields[key], warnings, label);
     }
+    const colors = Object.assign({}, setColors, s.colors);
+    if (Object.keys(colors).length) await applyColors(inst, colors, warnings, label);
     if (s.note) notes.push(`${label}: ${s.note}`);
     created.push(inst);
   }
@@ -276,14 +425,30 @@ async function generate(data: SetSpec | SlideSpec[]): Promise<{ count: number; w
 
   if (!created.length && container) container.remove();
   const focus: SceneNode[] = container && created.length ? [container] : created;
-  if (focus.length) {
-    figma.currentPage.selection = focus;
-    figma.viewport.scrollAndZoomIntoView(focus);
-  }
-  return { count: created.length, warnings, notes };
+  return { count: created.length, warnings, notes, focus };
 }
 
 // ---------- Scan ----------
+
+// Solid colors of a template, as the left side of a "colors" swap. Prefers the colors linked to a
+// color style (the palette), so logos and illustrations don't flood the list.
+function templateColors(root: SceneNode & ChildrenMixin): string[] {
+  const styled: Record<string, boolean> = {};
+  const all: Record<string, boolean> = {};
+  const add = (paints: ReadonlyArray<Paint>, styleId: string) => paints.forEach(p => {
+    if (p.type !== 'SOLID') return;
+    all[toHex(p.color)] = true;
+    if (styleId) styled[toHex(p.color)] = true;
+  });
+  [root as SceneNode].concat(root.findAll()).forEach(n => {
+    if ('fills' in n) {
+      if (n.type === 'TEXT' && n.fills === figma.mixed) n.getStyledTextSegments(['fills', 'fillStyleId']).forEach(seg => add(seg.fills, seg.fillStyleId));
+      else if (Array.isArray(n.fills)) add(n.fills, typeof n.fillStyleId === 'string' ? n.fillStyleId : '');
+    }
+    if ('strokes' in n) add(n.strokes, n.strokeStyleId);
+  });
+  return Object.keys(Object.keys(styled).length ? styled : all);
+}
 
 function sampleText(t: TextNode): string {
   const s = t.characters.replace(/\s+/g, ' ').trim();
@@ -320,6 +485,12 @@ async function scan(): Promise<{ json: string; summary: string[] }> {
     slide.fields = fields;
     const dupes = Object.keys(seen).filter(k => seen[k] > 1);
     info.push(`${Object.keys(fields).length} fields`);
+    const colors = templateColors(master);
+    if (colors.length) {
+      slide.colors = {};
+      colors.forEach(c => { slide.colors![c] = c; });
+      info.push(`${colors.length} colors`);
+    }
     if (dupes.length) info.push('shared names: ' + dupes.join(', '));
     summary.push(`• ${tpl.name} (${info.join('; ')})`);
     example.slides.push(slide);
@@ -333,13 +504,14 @@ async function scan(): Promise<{ json: string; summary: string[] }> {
 figma.ui.onmessage = async (msg: { type: string; data?: SetSpec | SlideSpec[] }) => {
   try {
     if (msg.type === 'generate') {
-      const r = await generate(msg.data as SetSpec | SlideSpec[]);
+      const r = await generateAll(msg.data as SetSpec | SlideSpec[]);
       figma.ui.postMessage({ type: 'result', ok: true, message: `Created ${r.count} item(s).`, warnings: r.warnings, notes: r.notes });
     } else if (msg.type === 'scan') {
       const s = await scan();
       figma.ui.postMessage({ type: 'scan', ok: true, json: s.json, summary: s.summary });
     }
   } catch (e) {
-    figma.ui.postMessage({ type: 'result', ok: false, message: e instanceof Error ? e.message : String(e) });
+    const where = e instanceof Error && e.stack ? (e.stack.split('\n').find(l => /at /.test(l)) || '').trim() : '';
+    figma.ui.postMessage({ type: 'result', ok: false, message: (e instanceof Error ? e.message : String(e)) + (where ? ` (${where})` : '') });
   }
 };

@@ -13,6 +13,13 @@ module.exports = tseslint.config(
     plugins: {
       '@figma/figma-plugins': figmaPlugin,
     },
+    // Figma rules need type information
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+      },
+    },
     rules: {
       ...figmaPlugin.configs.recommended.rules,
       // allow underscore-prefixing of unused variables

@@ -123,8 +123,13 @@
     if (!v) { statusEl.className = 'badge'; statusEl.textContent = 'Empty'; go.disabled = true; return null; }
     try {
       var data = JSON.parse(v);
-      var slides = Array.isArray(data) ? data : data && data.slides;
-      if (!Array.isArray(slides) || !slides.length) throw new Error('slides');
+      var sets = data && Array.isArray(data.sets) ? data.sets : [data];
+      var slides = [];
+      sets.forEach(function (set) {
+        var s = Array.isArray(set) ? set : set && set.slides;
+        if (!Array.isArray(s) || !s.length) throw new Error('slides');
+        slides = slides.concat(s);
+      });
       statusEl.className = 'badge ok';
       statusEl.textContent = '✓ ' + plural(slides.length);
       goLabel.textContent = 'Generate ' + plural(slides.length);
