@@ -18,27 +18,49 @@
   body { margin: 0; padding: 8px; background: var(--accent); font: 12px/1.5 Inter, system-ui, -apple-system, sans-serif; color: var(--ink); }
   .card { height: 100%; display: flex; flex-direction: column; background: var(--paper); border-radius: 16px; overflow: hidden; }
 
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-  .brand { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: -.01em; }
+  nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .brand { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: -.01em; white-space: nowrap; }
+  .nav-right { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .nav-right select { max-width: 130px; min-width: 0; text-overflow: ellipsis; }
+  .nav-right .pill { flex: none; }
 
-  main { flex: 1; min-height: 0; overflow: auto; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+  main { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 12px; }
   .hero h1 { margin: 0; color: var(--accent); font-weight: 900; font-size: clamp(38px, 13vw, 56px); line-height: .88; letter-spacing: -.055em; text-transform: uppercase; }
   .hero p { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; max-width: 360px; }
 
-  .editor { flex: 1 0 220px; display: flex; flex-direction: column; min-height: 220px; border: 1px dashed #d8d3c4; border-radius: 14px; background: transparent; transition: border-color .15s, background .15s; }
+  .editor { flex: 1 0 200px; display: flex; flex-direction: column; min-height: 200px; border: 1px dashed #d8d3c4; border-radius: 14px; background: transparent; transition: border-color .15s, background .15s; }
   .editor:focus-within, .editor.drag { border-color: var(--accent); background: rgba(255, 255, 255, .35); }
-  .editor-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px 0; white-space: nowrap; font-size: 11px; color: var(--muted); }
+  .editor-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px 0; font-size: 11px; color: var(--muted); min-width: 0; }
+  .editor-bar > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .editor-bar b { color: var(--accent); font-weight: 700; margin-right: 4px; }
   textarea { display: block; flex: 1; width: 100%; min-height: 0; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink);
     padding: 8px 12px 12px; font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; }
   textarea::placeholder { color: var(--muted); }
 
-  .badge { flex: none; white-space: nowrap; padding: 2px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 600; background: var(--paper-2); color: var(--muted); }
+  .badge { flex: none; white-space: nowrap; padding: 2px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 600; background: var(--paper-2); color: var(--muted); border: 0; height: auto; font-family: inherit; }
   .badge.ok { background: var(--accent-soft); color: var(--accent); }
-  .badge.err { background: #fde3dc; color: #c2361a; }
+  .badge.err { background: #fde3dc; color: #c2361a; cursor: pointer; }
+  .hints { font-size: 10.5px; color: var(--warn); padding: 0 12px 8px; }
+  .hints:empty { display: none; }
+
+  .tools { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--paper-2); font-size: 11px; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+  .row .lbl { color: var(--ink); font-weight: 600; }
+  .group { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 2px 8px 2px 10px; border-radius: 99px; background: #fff; border: 1px solid var(--line); color: var(--ink); font-size: 10.5px; }
+  .tag span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag button { height: auto; padding: 0; border: 0; background: none; color: var(--muted); font-size: 13px; line-height: 1; }
+  .tools label.add { cursor: pointer; color: var(--accent); font-weight: 600; }
+  .tools label.add input { display: none; }
+  .tools label.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--ink); }
+  .tools label.check input { margin: 0; accent-color: var(--accent); }
+  .hint { font-size: 10.5px; color: var(--muted); }
+  select { height: 24px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: 500 11px Inter, system-ui, sans-serif; padding: 0 6px; }
+  .link { height: auto; padding: 0; border: 0; background: none; color: var(--accent); font: 600 11px Inter, system-ui, sans-serif; }
+  .link:hover:not(:disabled) { text-decoration: underline; }
 
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 3px 10px; border-radius: 99px; border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 500; }
+  .chip { max-width: 100%; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chip small { color: var(--muted); font-weight: 400; margin-left: 4px; }
 
   .result { display: flex; flex-direction: column; gap: 10px; }
@@ -48,6 +70,7 @@
   .msg.warn b { color: var(--warn); }
   .msg.err b, .msg.err { color: #c2361a; }
   .msg ul { margin: 3px 0 0; padding-left: 16px; }
+  .msg a { color: var(--accent); font-weight: 600; }
 
   .actions { display: flex; gap: 8px; padding: 10px 16px; }
   button { height: 34px; border-radius: 99px; font: 600 12px/1 Inter, system-ui, sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s, color .15s, opacity .15s, transform .05s; }
@@ -55,8 +78,10 @@
   button:disabled { opacity: .4; cursor: default; }
   .pill { height: 28px; padding: 0 14px; border: 0; background: var(--accent); color: #fff; font-size: 11.5px; }
   .pill:hover:not(:disabled) { background: var(--accent-hover); }
-  .primary { flex: 1; border: 0; background: var(--accent); color: #fff; }
+  .primary { flex: 2; border: 0; background: var(--accent); color: #fff; }
   .primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .secondary { flex: 1; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); }
+  .secondary:hover:not(:disabled) { background: var(--accent-soft); }
   .spinner { width: 11px; height: 11px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
   .busy .spinner { display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -73,7 +98,10 @@
 <div class="card">
   <nav>
     <span class="brand">Template Filler</span>
-    <button class="pill" id="scan"><span class="spinner"></span>Scan templates</button>
+    <div class="nav-right">
+      <select id="recent" title="Recent JSONs" hidden><option value="">Recent…</option></select>
+      <button class="pill" id="scan"><span class="spinner"></span>Scan templates</button>
+    </div>
   </nav>
 
   <main>
@@ -84,8 +112,8 @@
 
     <div class="editor" id="editor">
       <div class="editor-bar">
-        <span><b>JSON</b>paste or drop a file</span>
-        <span class="badge" id="status">Empty</span>
+        <span><b>JSON</b>paste, or drop a .json file</span>
+        <button class="badge" id="status" type="button">Empty</button>
       </div>
       <textarea id="json" spellcheck="false" placeholder='{
   "name": "My carousel",
@@ -93,6 +121,28 @@
     { "template": "Cover", "fields": { "Title": "Hello **world**" } }
   ]
 }'></textarea>
+      <div class="hints" id="hints"></div>
+    </div>
+
+    <div class="tools">
+      <div class="row">
+        <span class="lbl">Images</span>
+        <span id="imageList" class="row">none</span>
+        <label class="add" title="Or drop image files on the editor, or paste them">+ add<input type="file" id="imageInput" accept="image/png,image/jpeg,image/gif,image/webp" multiple></label>
+      </div>
+      <div class="hint">Drop or paste image files here, then use their file name in the JSON ("Image": "foto.png").</div>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="update"> Update existing items with the same name</label>
+      </div>
+      <div class="row">
+        <span class="lbl">Selection</span>
+        <button class="link" id="exportJson">Get JSON</button>
+        <span class="group">
+          <button class="link" id="exportImages">Export as</button>
+          <select id="fmt"><option>PNG</option><option>JPG</option><option>PDF</option><option>SVG</option></select>
+          <select id="scale"><option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option><option value="4">4x</option></select>
+        </span>
+      </div>
     </div>
 
     <div class="chips" id="chips" hidden></div>
@@ -100,27 +150,73 @@
   </main>
 
   <div class="actions">
+    <button class="secondary" id="check"><span class="spinner"></span>Check</button>
     <button class="primary" id="go"><span class="spinner"></span><span id="goLabel">Generate</span></button>
   </div>
 
   <footer>
-    <div><b>Fields</b> Each key fills the layer with the same name.</div>
-    <div><b>Style</b> Use **bold** and *italic* inside text.</div>
-    <div><b>Hide</b> Set a field to null to hide that layer.</div>
+    <div><b>Fields</b> Each key fills the layer with the same name, or a path like Event1.Title.</div>
+    <div><b>Style</b> Use **bold** and *italic* inside text; {{vars}} and dates are expanded.</div>
+    <div><b>Hide</b> Set a field to null to hide that layer. Check shows what would happen.</div>
   </footer>
 </div>
 
 <script>
   var $ = function (id) { return document.getElementById(id); };
-  var ta = $('json'), statusEl = $('status'), result = $('result'), chips = $('chips'), go = $('go'), scanBtn = $('scan'), goLabel = $('goLabel');
+  var ta = $('json'), statusEl = $('status'), result = $('result'), chips = $('chips'), go = $('go'), scanBtn = $('scan'), checkBtn = $('check'), goLabel = $('goLabel');
+  var hints = $('hints'), imageList = $('imageList'), imageInput = $('imageInput'), updateBox = $('update'), recentSel = $('recent');
+  var exportJsonBtn = $('exportJson'), exportImagesBtn = $('exportImages'), fmtSel = $('fmt'), scaleSel = $('scale');
+  var images = {};      // file name → Uint8Array
+  var errorLine = 0;
+  var SLIDE_KEYS = ['template', 'variant', 'props', 'fields', 'colors', 'vars', 'extends', 'fit', 'name', 'note'];
+  var SET_KEYS = ['name', 'sets', 'gap', 'layout', 'colors', 'vars', 'defaults', 'fit', 'update', 'export', 'slides'];
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function plural(n) { return n + (n === 1 ? ' item' : ' items'); }
 
+  // Line of a JSON.parse error, from "position N" or "line N column M" in the browser message
+  function errorLineOf(message, text) {
+    var m = /line (\d+)/i.exec(message);
+    if (m) return +m[1];
+    m = /position (\d+)/i.exec(message);
+    if (m) return text.slice(0, +m[1]).split('\n').length;
+    return 0;
+  }
+
+  function schemaHints(data) {
+    var out = [];
+    var unknown = function (obj, known, where) {
+      Object.keys(obj).forEach(function (k) {
+        if (k.charAt(0) !== '_' && known.indexOf(k) < 0) out.push('unknown key "' + k + '" in ' + where);
+      });
+    };
+    var checkSet = function (set, where) {
+      if (Array.isArray(set)) { set.forEach(function (s, i) { checkSlide(s, where + ' item ' + (i + 1)); }); return; }
+      if (!set || typeof set !== 'object') { out.push(where + ' is not an object'); return; }
+      unknown(set, SET_KEYS, where);
+      if (Array.isArray(set.sets)) set.sets.forEach(function (s, i) { checkSet(s, 'set ' + (i + 1)); });
+      else if (!Array.isArray(set.slides) || !set.slides.length) out.push(where + ': "slides" must be a non-empty array');
+      else set.slides.forEach(function (s, i) { checkSlide(s, where + ' item ' + (i + 1)); });
+      if (set.defaults && typeof set.defaults === 'object') Object.keys(set.defaults).forEach(function (k) { checkSlide(set.defaults[k], 'defaults "' + k + '"', true); });
+    };
+    var checkSlide = function (s, where, isDefault) {
+      if (!s || typeof s !== 'object' || Array.isArray(s)) { out.push(where + ' is not an object'); return; }
+      unknown(s, SLIDE_KEYS, where);
+      if (!isDefault && s.extends === undefined && typeof s.template !== 'string') out.push(where + ': missing "template"');
+      ['fields', 'props', 'variant', 'colors', 'vars'].forEach(function (k) {
+        if (s[k] !== undefined && (typeof s[k] !== 'object' || s[k] === null || Array.isArray(s[k]))) out.push(where + ': "' + k + '" must be an object');
+      });
+    };
+    checkSet(data, 'the set');
+    return out.slice(0, 6);
+  }
+
   function validate() {
     var v = ta.value.trim();
     goLabel.textContent = 'Generate';
-    if (!v) { statusEl.className = 'badge'; statusEl.textContent = 'Empty'; go.disabled = true; return null; }
+    hints.textContent = '';
+    errorLine = 0;
+    if (!v) { statusEl.className = 'badge'; statusEl.textContent = 'Empty'; go.disabled = checkBtn.disabled = true; return null; }
     try {
       var data = JSON.parse(v);
       var sets = data && Array.isArray(data.sets) ? data.sets : [data];
@@ -133,20 +229,33 @@
       statusEl.className = 'badge ok';
       statusEl.textContent = '✓ ' + plural(slides.length);
       goLabel.textContent = 'Generate ' + plural(slides.length);
-      go.disabled = false;
+      go.disabled = checkBtn.disabled = false;
+      var h = schemaHints(data);
+      hints.textContent = h.length ? '⚠ ' + h.join(' · ') : '';
       return data;
     } catch (e) {
       statusEl.className = 'badge err';
-      statusEl.textContent = e.message === 'slides' ? 'Missing "slides"' : 'Invalid JSON';
-      go.disabled = true;
+      if (e.message === 'slides') statusEl.textContent = 'Missing "slides"';
+      else { errorLine = errorLineOf(e.message, ta.value); statusEl.textContent = 'Invalid JSON' + (errorLine ? ' · line ' + errorLine : ''); }
+      go.disabled = checkBtn.disabled = true;
       return null;
     }
   }
 
+  // Click the badge to jump to the faulty line
+  statusEl.onclick = function () {
+    if (!errorLine) return;
+    var lines = ta.value.split('\n'), start = 0;
+    for (var i = 0; i < errorLine - 1 && i < lines.length; i++) start += lines[i].length + 1;
+    ta.focus();
+    ta.setSelectionRange(start, start + (lines[errorLine - 1] || '').length);
+    var lh = 17; ta.scrollTop = Math.max(0, (errorLine - 3) * lh);
+  };
+
   function setBusy(btn, on) {
-    btn.classList.toggle('busy', on);
-    scanBtn.disabled = on;
-    go.disabled = on || !validate();
+    [scanBtn, go, checkBtn].forEach(function (b) { b.classList.toggle('busy', on && b === btn); });
+    scanBtn.disabled = exportJsonBtn.disabled = exportImagesBtn.disabled = on;
+    go.disabled = checkBtn.disabled = on || !validate();
   }
 
   function msg(kind, label, text, items) {
@@ -154,6 +263,32 @@
     if (items && items.length) html += '<ul><li>' + items.map(esc).join('</li><li>') + '</li></ul>';
     return html + '</div>';
   }
+
+  // ----- images dropped on the plugin -----
+  function renderImages() {
+    var names = Object.keys(images);
+    imageList.innerHTML = names.length ? names.map(function (n) {
+      return '<span class="tag" title="' + esc(n) + '"><span>' + esc(n) + '</span><button type="button" data-name="' + esc(n) + '" title="Remove">×</button></span>';
+    }).join('') : 'none';
+  }
+  imageList.addEventListener('click', function (e) {
+    var n = e.target && e.target.getAttribute && e.target.getAttribute('data-name');
+    if (n) { delete images[n]; renderImages(); }
+  });
+  function addFiles(files) {
+    Array.prototype.forEach.call(files, function (f) {
+      if (/\.json$/i.test(f.name) || f.type === 'application/json') { f.text().then(function (txt) { ta.value = txt; validate(); }); return; }
+      if (/^image\//.test(f.type) || /\.(png|jpe?g|gif|webp)$/i.test(f.name)) {
+        f.arrayBuffer().then(function (buf) { images[f.name] = new Uint8Array(buf); renderImages(); });
+      }
+    });
+  }
+  imageInput.addEventListener('change', function () { try { addFiles(imageInput.files); } catch (e) { result.innerHTML = msg('err', 'Error', String(e)); } imageInput.value = ''; });
+  // Images can also be pasted (Ctrl/⌘ + V) anywhere in the plugin
+  document.addEventListener('paste', function (e) {
+    var files = e.clipboardData && e.clipboardData.files;
+    if (files && files.length) { e.preventDefault(); addFiles(files); }
+  });
 
   ta.addEventListener('input', validate);
   ta.addEventListener('keydown', function (e) {
@@ -166,41 +301,107 @@
   ['dragleave', 'drop'].forEach(function (t) { editor.addEventListener(t, function () { editor.classList.remove('drag'); }); });
   editor.addEventListener('drop', function (e) {
     e.preventDefault();
-    var f = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f) f.text().then(function (txt) { ta.value = txt; validate(); });
+    if (e.dataTransfer.files && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
   });
 
+  // ----- downloads -----
+  function download(file, delay) {
+    setTimeout(function () {
+      var blob = new Blob([file.bytes], { type: file.mime || 'application/octet-stream' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = file.name; document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+    }, delay || 0);
+  }
+  var pendingFiles = [];
+  function filesHtml(files) {
+    pendingFiles = files;
+    files.forEach(function (f, i) { download(f, i * 400); });
+    return '<div class="msg"><b>Files</b>' + files.map(function (f, i) {
+      return '<a href="#" data-file="' + i + '">' + esc(f.name) + '</a>';
+    }).join(', ') + ' <span>(click a name to download it again)</span></div>';
+  }
+  result.addEventListener('click', function (e) {
+    var i = e.target && e.target.getAttribute && e.target.getAttribute('data-file');
+    if (i !== null && i !== undefined) { e.preventDefault(); download(pendingFiles[+i]); }
+  });
+
+  // ----- recent JSONs -----
+  function renderRecent(items) {
+    recentSel.innerHTML = '<option value="">Recent…</option>' + items.map(function (it, i) {
+      var d = new Date(it.at);
+      return '<option value="' + i + '">' + esc(it.name) + ' · ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString().slice(0, 5) + '</option>';
+    }).join('') + (items.length ? '<option value="clear">Clear list</option>' : '');
+    recentSel.hidden = !items.length;
+  }
+  recentSel.onchange = function () {
+    var v = recentSel.value;
+    recentSel.value = '';
+    if (v === 'clear') parent.postMessage({ pluginMessage: { type: 'recent-clear' } }, '*');
+    else if (v !== '') parent.postMessage({ pluginMessage: { type: 'recent-load', name: v } }, '*');
+  };
+
+  // ----- actions -----
   scanBtn.onclick = function () {
     setBusy(scanBtn, true); result.innerHTML = '';
     parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
   };
-
   go.onclick = function () {
     var data = validate(); if (!data) return;
     setBusy(go, true); result.innerHTML = '';
-    parent.postMessage({ pluginMessage: { type: 'generate', data: data } }, '*');
+    parent.postMessage({ pluginMessage: { type: 'generate', data: data, images: images, update: updateBox.checked, json: ta.value } }, '*');
+  };
+  checkBtn.onclick = function () {
+    var data = validate(); if (!data) return;
+    setBusy(checkBtn, true); result.innerHTML = '';
+    parent.postMessage({ pluginMessage: { type: 'check', data: data, images: images, update: updateBox.checked } }, '*');
+  };
+  exportJsonBtn.onclick = function () {
+    setBusy(scanBtn, true); result.innerHTML = '';
+    parent.postMessage({ pluginMessage: { type: 'export-json' } }, '*');
+  };
+  exportImagesBtn.onclick = function () {
+    setBusy(scanBtn, true); result.innerHTML = '';
+    parent.postMessage({ pluginMessage: { type: 'export-images', format: fmtSel.value, scale: +scaleSel.value } }, '*');
   };
 
   onmessage = function (e) {
     var m = e.data.pluginMessage; if (!m) return;
+    if (m.type === 'recent') { renderRecent(m.items || []); return; }
+    if (m.type === 'recent-json') { ta.value = m.json; validate(); return; }
     if (m.type === 'scan' && m.ok) {
-      ta.value = m.json;
+      ta.value = m.json; validate();
       chips.hidden = false;
       chips.innerHTML = m.summary.map(function (s) {
         var t = s.replace(/^•\s*/, ''), i = t.indexOf(' (');
-        return '<span class="chip">' + esc(i > 0 ? t.slice(0, i) : t) + (i > 0 ? '<small>' + esc(t.slice(i + 2, -1)) + '</small>' : '') + '</span>';
+        var name = i > 0 ? t.slice(0, i) : t, info = i > 0 ? t.slice(i + 2, -1) : '';
+        var short = info.split('; ').filter(function (x) { return !/^shared/.test(x); }).join(' · ');
+        return '<span class="chip" title="' + esc(info) + '">' + esc(name) + (short ? '<small>' + esc(short) + '</small>' : '') + '</span>';
       }).join('');
       result.innerHTML = msg('', 'Example ready', 'One item per template: duplicate, reorder and fill them with your content.');
-    } else if (m.ok) {
-      var html = msg('ok', 'Done', m.message);
+    } else if (m.type === 'export-json' && m.ok) {
+      ta.value = m.json; validate();
+      result.innerHTML = msg('ok', 'Exported', m.message + ' Images are marked "@keep": replace them with a URL or a file name to change them.');
+    } else if (m.type === 'check' && m.ok) {
+      var html = msg(m.warnings && m.warnings.length ? 'warn' : 'ok', 'Checked', m.message);
+      if (m.report && m.report.length) html += msg('', 'Items', '', m.report);
+      if (m.warnings && m.warnings.length) html += msg('warn', 'Issues', '', m.warnings);
       if (m.notes && m.notes.length) html += msg('', 'Reminders', '', m.notes);
-      if (m.warnings && m.warnings.length) html += msg('warn', 'Warnings', '', m.warnings);
       result.innerHTML = html;
+    } else if (m.ok) {
+      var html2 = msg('ok', 'Done', m.message);
+      if (m.files && m.files.length) html2 += filesHtml(m.files);
+      if (m.notes && m.notes.length) html2 += msg('', 'Reminders', '', m.notes);
+      if (m.warnings && m.warnings.length) html2 += msg('warn', 'Warnings', '', m.warnings);
+      result.innerHTML = html2;
     } else {
       result.innerHTML = msg('err', 'Error', m.message);
     }
-    setBusy(scanBtn, false); setBusy(go, false);
+    setBusy(null, false);
   };
 
   validate();
+  renderImages();
+  parent.postMessage({ pluginMessage: { type: 'recent-get' } }, '*');
 </script>
